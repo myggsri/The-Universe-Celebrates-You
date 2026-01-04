@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Happy Birthday, Nurhaliza 🌌</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --deep-blue: #020617;
+            --space-blue: #1e293b;
+            --glow-blue: #38bdf8;
+            --accent: #60a5fa;
+        }
+        *{ 
+            margin:0;padding:0;box-sizing:border-box; 
+            font-family:'Inter',sans-serif; 
+            -webkit-tap-highlight-color:transparent; 
+        }
+        body{ 
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); 
+            height:100vh; 
+            overflow:hidden; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            color:#f8fafc; 
+        }
+
+        /* BACKGROUND & STARS */
+        #star-container {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            overflow: hidden; background: transparent;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%; opacity: 0.6;
+            animation: rain linear infinite;
+        }
+        
+        /* UPDATED: SLOWER BLUE SHOOTING STARS */
+        .shooting-star {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1), 0 0 0 8px rgba(56, 189, 248, 0.1), 0 0 20px rgba(56, 189, 248, 1);
+            /* Durasi diperlambat menjadi 5 detik */
+            animation: animate-shooting 5s linear infinite;
+            opacity: 0;
+        }
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 300px;
+            height: 1px;
+            background: linear-gradient(90deg, #fff, transparent);
+        }
+
+        @keyframes animate-shooting {
+            0% { transform: rotate(315deg) translateX(0); opacity: 1; }
+            70% { opacity: 1; }
+            100% { transform: rotate(315deg) translateX(-1500px); opacity: 0; }
+        }
+
+        @keyframes rain {
+            0% { transform: translateY(-10vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh); opacity: 0; }
+        }
+
+        /* UI ELEMENTS */
+        .slide{
+            position:absolute; inset:0; padding:28px;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            text-align:center; z-index: 10; opacity:0; pointer-events:none;
+            transform: scale(0.95); transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .slide.active{opacity:1; pointer-events:auto; transform: scale(1);}
+        
+        h1,h2{ 
+            font-family:'Playfair Display',serif; 
+            color: var(--glow-blue); 
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.5); 
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        button {
+            margin-top:22px; padding:14px 35px; border: 1px solid var(--glow-blue);
+            border-radius:999px; background: rgba(56, 189, 248, 0.1);
+            color: #fff; font-size:16px; font-weight: 500; cursor:pointer;
+            transition:.2s; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            position: relative; overflow: hidden;
+            animation: pulseBtn 2s infinite; 
+        }
+        button:hover { background: var(--glow-blue); box-shadow: 0 0 25px var(--glow-blue); color: var(--deep-blue); }
+        
+        #btnGoGift { 
+            display: none; 
+            background: linear-gradient(45deg, var(--glow-blue), #60a5fa);
+            color: var(--deep-blue);
+            font-weight: bold;
+            border: none;
+        }
+
+        @keyframes pulseBtn {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        input{
+            margin-top:18px; padding:14px 16px; width:100%; max-width:320px;
+            border-radius:16px; border: 1px solid var(--space-blue);
+            background: rgba(255,255,255,0.05); color: #fff; outline:none;
+            font-size:15px; text-align: center;
+        }
+
+        .popup-overlay{
+            position:fixed; inset:0; background:rgba(0,0,0,0.85);
+            display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:.3s ease; z-index:999;
+        }
+        .popup-overlay.show{opacity:1; pointer-events:auto}
+        .popup{
+            background: #0f172a; border: 1px solid var(--glow-blue);
+            padding:24px; width:90%; max-width:320px; border-radius:22px;
+            text-align:center; box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+        }
+        #timerTxt { display: block; margin-top: 15px; font-weight: bold; color: var(--glow-blue); font-size: 3rem; }
+        
+        .cake-container { cursor: pointer; margin-top: 30px; position: relative; display: inline-block; }
+        .cake { font-size: 80px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        .candle {
+            font-size: 24px; opacity: 0; transition: 0.5s;
+            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+            pointer-events: none;
+        }
+        .candle.lit { opacity: 1; text-shadow: 0 0 15px orange, 0 0 5px red; animation: flicker 0.1s infinite alternate; }
+        
+        .scroll-area {
+            max-height: 40vh; overflow-y: auto; width: 100%;
+            padding: 10px; scrollbar-width: none; scroll-behavior: smooth;
+        }
+        .scroll-area::-webkit-scrollbar { display: none; }
+        #typingText { min-height: 80px; color: #e2e8f0; line-height: 1.6; font-size: 15px; }
+
+        .wheel-container {
+            position: relative; width: 280px; height: 280px;
+            display: flex; justify-content: center; align-items: center; margin: 30px 0;
+        }
+        .wheel-pointer {
+            position: absolute; top: -18px; z-index: 100; left: 50%;
+            transform: translateX(-50%);
+            color: var(--glow-blue); font-size: 26px; filter: drop-shadow(0 0 8px var(--glow-blue));
+        }
+        .wheel {
+            position: absolute; width: 280px; height: 280px; 
+            border-radius: 50%; border: 4px solid var(--glow-blue);
+            overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+            z-index: 1; background: var(--space-blue);
+        }
+        .segment {
+            position: absolute; width: 50%; height: 50%;
+            transform-origin: bottom right; transform: rotate(calc(60deg * var(--i)));
+            display: flex; justify-content: center; align-items: center;
+        }
+        .segment span {
+            position: relative; transform: rotate(45deg);
+            font-size: 14px; font-weight: bold; color: white;
+            text-align: center; margin-left: 25px;
+        }
+        #spinBtn {
+            position: relative; z-index: 10; width: 68px; height: 68px;
+            background: var(--deep-blue); border: 3px solid var(--glow-blue);
+            border-radius: 50%; cursor: pointer; font-weight: bold;
+            color: var(--glow-blue); font-size: 13px; margin: 0;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px var(--glow-blue);
+            animation: spinPulse 2s infinite ease-in-out;
+        }
+        @keyframes spinPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .result-card {
+            display: none; margin-top: 10px; padding: 18px;
+            background: rgba(15, 23, 42, 0.95); border: 2px solid var(--glow-blue);
+            border-radius: 15px; animation: fadeIn 0.8s forwards; width: 100%; max-width: 320px;
+        }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+        
+        #runBtnContainer { transition: 0.3s ease; position: relative; z-index: 20; }
+        .typing-q { min-height: 1.2em; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div id="star-container"></div>
+    <audio id="music" src="music.mp3" loop preload="auto"></audio>
+
+    <div class="popup-overlay" id="popup">
+        <div class="popup">
+            <p id="popupText"></p>
+            <span id="timerTxt"></span>
+            <button id="closePopupBtn" onclick="closePopup()">Oke</button>
+        </div>
+    </div>
+
+    <div class="slide active" id="slide1">
+        <h2>Di Bawah Bintang yg Jatuh Ini...</h2>
+        <p style="margin-top:12px; opacity: 0.8;" id="txt1" class="typing-q"></p>
+        <button onclick="startJourney()">Open Secret ✨</button>
+    </div>
+
+    <div class="slide" id="slide2">
+        <h2>Sebelum lanjut…</h2>
+        <p style="margin-top:10px;" id="txt2" class="typing-q"></p>
+        <input id="answer1" placeholder="Tulis di sini yaa…" />
+        <button onclick="submitSyukur()">Kirim ke Bintang 🌠</button>
+    </div>
+
+    <div class="slide" id="slide3">
+        <h2>One more thing 😏</h2>
+        <p style="margin-top:10px;" id="txt3" class="typing-q"></p>
+        <input id="age" type="number" placeholder="Contoh: 23" />
+        <button onclick="submitAge()">Submit 😌</button>
+    </div>
+
+    <div class="slide" id="slide4">
+        <h2>You're a patient person, aren't you?</h2>
+        <div style="display:flex; gap:10px;">
+            <button onclick="fakeAnswer()">Sabar bangett ☺️</button>
+            <button onclick="fakeAnswer()">Sabar aja👍</button>
+        </div>
+    </div>
+
+    <div class="slide" id="slide5">
+        <h2>Press the next button to continue...</h2>
+        <div style="height: 300px; display:flex; align-items:center; justify-content:center; width:100%;">
+            <div id="runBtnContainer">
+                <button id="runBtn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide6">
+        <h2>Make a wish dulu please... 🕯️</h2>
+        <p id="txt4" class="typing-q" style="margin-bottom: 10px;"></p>
+        <div class="cake-container" onclick="lightCandle()">
+            <div class="candle" id="candle">🔥</div>
+            <div class="cake">🎂</div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide7">
+        <h2>Ditulis di Antara Bintang… 💖</h2>
+        <div class="scroll-area" id="scrollArea">
+            <div id="typingText"></div>
+        </div>
+        <p style="margin-top:20px; font-weight:bold; color: var(--glow-blue);"> Happy Birthday yaa, Nurhaliza 🌌🎂 </p>
+        <button id="btnGoGift" onclick="nextSlide(8)">Ambil Hadiahmu 🎁</button>
+    </div>
+
+    <div class="slide" id="slide8">
+        <h2>The Mystery Galaxy Spin 🌌</h2>
+        <p id="txt5" class="typing-q" style="margin-bottom: 20px;"></p>
+        <div class="wheel-container">
+            <div class="wheel-pointer">▼</div>
+            <div class="wheel" id="wheel">
+                <div class="segment" style="--i:1; background:#1e293b;"><span>🎁??</span></div>
+                <div class="segment" style="--i:2; background:#334155;"><span>🎁??</span></div>
+                <div class="segment" style="--i:3; background:#1e293b;"><span>🎁??</span></div>
+                <div class="segment" style="--i:4; background:#334155;"><span>🎁??</span></div>
+                <div class="segment" style="--i:5; background:#1e293b;"><span>🎁??</span></div>
+                <div class="segment" style="--i:6; background:#334155;"><span>🎁??</span></div>
+            </div>
+            <button id="spinBtn" onclick="spinWheel()">SPIN</button>
+        </div>
+        <div id="result-card" class="result-card">
+            <h3 style="color: var(--glow-blue); font-size: 15px;">Semesta Telah Menjawab! ✨</h3>
+            <p id="gift-name" style="font-weight: bold; margin: 15px 0; font-size: 16px; color: #ffd700;"></p>
+            <p style="font-size: 10px; color: #94a3b8;">Screenshot & kirim ke WA myg comel ya!🚀(Permintaannya yg sekiranya myg sanggupi yaa >.<) </p>
+        </div>
+    </div>
+
+    <script>
+        emailjs.init("msfS2xjt7fb8b-q8n");
+        let musicPlayed=false; let moveCount = 0; let canMove = true; let nextSlideAfterPopup = null;
+        const messages = ["Eits! ga kena ya 😛", "Coba lagi ya, katanya sabar☹️", "Masih sabar ga?", "Dikit lagi deh..."];
+        const audio = document.getElementById('music');
+
+        /* UPDATED: SLOWER TYPING SPEED (70ms) */
+        function autoType(elementId, text, speed = 70, callback = null) {
+            const element = document.getElementById(elementId);
+            if(!element) return;
+            element.innerHTML = "";
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i); i++;
+                    setTimeout(type, speed);
+                } else if (callback) callback();
+            }
+            type();
+        }
+
+        function createStars() {
+            const container = document.getElementById('star-container');
+            
+            for(let i=0; i<60; i++) {
+                const star = document.createElement('div');
+                star.className = 'star'; 
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px'; star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(star);
+            }
+            
+            /* UPDATED: Shooting stars spawning interval slowed down to 2.5s */
+            setInterval(() => {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                shootingStar.style.left = Math.random() * 100 + 'vw';
+                shootingStar.style.top = Math.random() * 50 + 'vh';
+                // Animasi terbang diperlambat (3-4 detik)
+                shootingStar.style.animationDuration = (Math.random() * 1 + 3) + 's';
+                container.appendChild(shootingStar);
+                
+                setTimeout(() => {
+                    shootingStar.remove();
+                }, 5000);
+            }, 2500);
+        }
+
+        window.onload = () => { 
+            createStars();
+            autoType("txt1", "There is a little secret hidden for you 🌌"); 
+        };
+
+        function startJourney() { if(!musicPlayed) { audio.play(); musicPlayed=true; } nextSlide(2); }
+
+        function nextSlide(n){
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(s => s.classList.remove('active'));
+            const target = document.getElementById('slide'+n);
+            if(target) { 
+                target.classList.add('active'); 
+                if(n === 2) autoType("txt2", "What are you grateful for or what has been memorable for you this year??");
+                if(n === 3) autoType("txt3", "How old are you now?");
+                if(n === 6) autoType("txt4", "Kalo udah make a wish, tap kuenya ya to light up your hopes!");
+                if(n === 7) setTimeout(startTyping, 600);
+                if(n === 8) autoType("txt5", "Spin salah satu kado misterius dari semesta ini ya!");
+            }
+        }
+
+        function showPopup(text, next = null, duration = null){
+            const overlay = document.getElementById('popup');
+            const timerTxt = document.getElementById('timerTxt');
+            document.getElementById('popupText').innerHTML = text;
+            overlay.classList.add('show'); nextSlideAfterPopup = next;
+            
+            if(duration) {
+                document.getElementById('closePopupBtn').style.display = 'none';
+               let timeLeft = duration / 1000; 
+                timerTxt.innerHTML = timeLeft;
+                const countdown = setInterval(() => {
+                    timeLeft--;
+                    if(timeLeft > 0) { timerTxt.innerHTML = timeLeft; }
+                    else { clearInterval(countdown); timerTxt.innerHTML = ""; closePopup(); }
+                }, 1000);
+            } else {
+                document.getElementById('closePopupBtn').style.display = 'inline-block';
+                timerTxt.innerHTML = "";
+            }
+        }
+
+        function closePopup(){ 
+            document.getElementById('popup').classList.remove('show'); 
+            if(nextSlideAfterPopup) { nextSlide(nextSlideAfterPopup); nextSlideAfterPopup = null; } 
+            canMove = true; 
+        }
+
+        function submitSyukur(){ 
+            if(!document.getElementById('answer1').value.trim()) return showPopup("Mohon diisi dulu ya... 🌌");
+            nextSlide(3); 
+        }
+
+        function submitAge(){
+            if(!document.getElementById('age').value.trim()) return showPopup("Isi umurnya dulu dong 😤");
+            emailjs.send("service_liza", "template_y0wcud1", { 
+                age: document.getElementById('age').value, 
+                message: document.getElementById('answer1').value 
+            });
+            showPopup("HAHAHA... <br> makin tua ya 😂", 4);
+        }
+
+        function fakeAnswer(){ showPopup("Real kah? 😌<br>Let's see yaa!", 5, 10000); }
+
+        const runBtn = document.getElementById('runBtn');
+        runBtn.addEventListener('click', () => {
+            if(moveCount < 4) {
+                const x = Math.random() * 200 - 100;
+                const y = Math.random() * 150 - 75;
+                document.getElementById('runBtnContainer').style.transform = `translate(${x}px, ${y}px)`;
+                showPopup(messages[moveCount], null, 3000);
+                moveCount++;
+            } else {
+                nextSlide(6);
+            }
+        });
+
+        function lightCandle() {
+            const candle = document.getElementById('candle');
+            if(!candle.classList.contains('lit')) {
+                candle.classList.add('lit');
+                confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+                setTimeout(() => nextSlide(7), 4000);
+            }
+        }
+
+        /* UPDATED: LONG AFFIRMATION TYPING SPEED (80ms) */
+        function startTyping() {
+            const text = "Di semesta yang luas ini, I am grateful that you were born and that I got to know you. Semoga di umur baru ini, langkahmu makin ringan (ga kesandung overthinking), hatimu makin tenang (walopun hidup kadang random abies), diiringi kesehatan dan rezeki yg melimpah yaa aamiin. Honestly, I'm not good at affirmations, so whatever your good wishes were on the previous slide, before you tap the cake 🎂 I hope they all come true, one by one yaa! ✨";
+            const containerTxt = document.getElementById('typingText');
+            if(containerTxt.innerHTML !== "") return;
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    containerTxt.innerHTML += text.charAt(i); i++;
+                    document.getElementById('scrollArea').scrollTop = document.getElementById('scrollArea').scrollHeight;
+                    setTimeout(type, 80);
+                } else { document.getElementById('btnGoGift').style.display = 'inline-block'; }
+            }
+            type();
+        }
+
+        let isSpinning = false;
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.getElementById('spinBtn');
+            const randomDeg = Math.floor(Math.random() * 360) + 3600;
+            wheel.style.transform = `rotate(${randomDeg}deg)`;
+            spinBtn.style.opacity = "0.5"; 
+            spinBtn.innerText = "WAIT";
+
+            setTimeout(() => {
+                document.getElementById('result-card').style.display = 'block';
+                document.getElementById('gift-name').innerText = "Satu permintaanmu akan dikabulkan di bawah restu semesta oleh mayang comel! 🌌💖";
+                spinBtn.style.display = 'none';
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
